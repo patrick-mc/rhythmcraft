@@ -15,8 +15,6 @@ const Item = require('../schemas/item');
 const setting = require('../setting.json');
 const utils = require('../utils');
 
-const ko_bad = require('../assets/bad_words.json').words;
-
 module.exports = (io, app) => {
     io.on('connection', async socket => {
         const user = await User.findOne({ fullID : socket.request.session.passport.user.fullID });
@@ -794,24 +792,6 @@ module.exports = (io, app) => {
 
             const chat_id = uniqueString();
             if(checkroom.public) {
-                for (const w of ko_bad) {
-                    if(data.chat.includes(w)) {
-                        socket.emit('Chat', {
-                            nickname: `시스템`,
-                            chattype: 'system',
-                            chat: `채팅에 부적절한 단어가 포함되어 전송되지 않았습니다.`,
-                            verified: true
-                        });
-                        const d = new Date();
-                        d.setMinutes(d.getMinutes() + 5);
-
-                        await User.updateOne({ fullID : checkuser.fullID }, {
-                            block_chat: d.getTime(),
-                            block_chat_reason: '채팅에 부적절한 언어 사용'
-                        });
-                        return;
-                    }
-                }
                 await Chat.create({
                     fullID: checkuser.fullID,
                     text: data.chat,
